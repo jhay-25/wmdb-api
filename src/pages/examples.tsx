@@ -108,17 +108,10 @@ export default function Examples() {
       <div className="space-y-12">
         <div>
           <h1 className="text-4xl font-bold text-white mb-4">Code Examples</h1>
-          <p className="text-gray-300">
-            Examples in multiple programming languages
-          </p>
         </div>
 
         {/* Language Examples */}
         <div>
-          <h2 className="text-2xl font-bold text-white mb-6">
-            Language Examples
-          </h2>
-
           <div className="flex flex-wrap gap-2 mb-6">
             {languages.map((lang) => (
               <button
@@ -135,8 +128,8 @@ export default function Examples() {
             ))}
           </div>
 
-          <div className="bg-main-400 rounded-lg overflow-hidden">
-            <div className="flex items-center justify-between px-4 py-2 bg-main-500 border-b border-brown-500/30">
+          <div className="bg-main-400 rounded-lg">
+            <div className="flex items-center justify-between px-4 py-2 bg-main-500 border rounded-tl rounded-tr border-brown-500/30">
               <span className="text-gray-300 font-semibold">
                 {selectedLanguage.name}
               </span>

@@ -38,8 +38,20 @@ export default function Home() {
         </h2>
         <p className="text-gray-300 mb-4">
           All endpoints are publicly accessible and require no authentication.
-          Simply make HTTP GET requests to retrieve data in JSON format.
         </p>
+
+        <div className="bg-yellow-500/10 border border-yellow-500/40 rounded-lg p-4 mb-6 flex gap-3">
+          <span className="text-yellow-400 text-lg">⚠️</span>
+          <div>
+            <p className="text-yellow-300 font-semibold text-sm mb-1">
+              Rate Limit
+            </p>
+            <p className="text-gray-300 text-sm">
+              Requests are limited to{' '}
+              <strong className="text-white">600 calls per minute</strong>.
+            </p>
+          </div>
+        </div>
 
         <h3 className="text-lg font-semibold text-white file:mt-8 mb-3">
           Example Request
