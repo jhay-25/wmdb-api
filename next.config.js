@@ -1,7 +1,11 @@
+import { initOpenNextCloudflareForDev } from '@opennextjs/cloudflare'
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
   output: 'standalone'
 }
 
-module.exports = nextConfig
+initOpenNextCloudflareForDev()
+
+export default nextConfig
