@@ -14,29 +14,26 @@ const endpoints = [
         description: 'Search query'
       }
     ],
-    response: {
-      success: true,
-      data: [
-        {
-          id: '75c0632e-3e8a-4283-8e23-bb7f201cca72',
-          name: 'Mount Pulag',
-          elevation_ft: null,
-          elevation_m: 2926,
-          latitude: 16.59772,
-          longitude: 120.89875,
-          prominence_ft: null,
-          prominence_m: 2926,
-          description: '',
-          highlights: null,
-          canonical_url: 'pulag',
-          difficulty_level: null,
-          banner_path: '',
-          country_name: 'Philippines',
-          province_name: 'Benguet',
-          region_name: 'Cordillera Administrative Region'
-        }
-      ]
-    }
+    response: [
+      {
+        id: '75c0632e-3e8a-4283-8e23-bb7f201cca72',
+        name: 'Mount Pulag',
+        elevation_ft: null,
+        elevation_m: 2926,
+        latitude: 16.59772,
+        longitude: 120.89875,
+        prominence_ft: null,
+        prominence_m: 2926,
+        description: '',
+        highlights: null,
+        canonical_url: 'pulag',
+        difficulty_level: null,
+        banner_path: '',
+        country_name: 'Philippines',
+        province_name: 'Benguet',
+        region_name: 'Cordillera Administrative Region'
+      }
+    ]
   },
   {
     method: 'GET',
@@ -51,32 +48,29 @@ const endpoints = [
       }
     ],
     response: {
-      success: true,
-      data: {
-        mountain: {
-          id: 'ab58d8f7-d9ac-4092-b680-8ac2ad1d3f0d',
-          created_at: '2025-06-13T00:55:00.148779+00:00',
-          name: 'Mount Rainier',
-          elevation_ft: null,
-          elevation_m: 4390,
-          latitude: 46.8528267,
-          longitude: -121.7604408,
-          prominence_ft: null,
-          prominence_m: null,
-          description: null,
-          highlights: null,
-          canonical_url: 'mount-rainier-washington',
-          difficulty_level: null,
-          other_name: null,
-          created_by: null,
-          banner_path: null
-        },
-        countries: [{ id: 2, name: 'United States', iso_code: 'US' }],
-        islands: [],
-        ranges: [],
-        regions: [{ id: 65, name: 'Washington' }],
-        provinces: []
-      }
+      mountain: {
+        id: 'ab58d8f7-d9ac-4092-b680-8ac2ad1d3f0d',
+        created_at: '2025-06-13T00:55:00.148779+00:00',
+        name: 'Mount Rainier',
+        elevation_ft: null,
+        elevation_m: 4390,
+        latitude: 46.8528267,
+        longitude: -121.7604408,
+        prominence_ft: null,
+        prominence_m: null,
+        description: null,
+        highlights: null,
+        canonical_url: 'mount-rainier-washington',
+        difficulty_level: null,
+        other_name: null,
+        created_by: null,
+        banner_path: null
+      },
+      countries: [{ id: 2, name: 'United States', iso_code: 'US' }],
+      islands: [],
+      ranges: [],
+      regions: [{ id: 65, name: 'Washington' }],
+      provinces: []
     }
   }
 ]
