@@ -17,7 +17,7 @@ export interface Endpoint {
 }
 
 export const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_BASE_URL || 'https://wmdb.akyatbundok.dev/api'
+  process.env.NEXT_PUBLIC_API_BASE_URL || 'https://wmdb.akyatbundok.com/api'
 
 // Anchor id for the endpoint on /endpoints.
 export const endpointId = (path: string) =>
