@@ -1,77 +1,68 @@
-import Head from 'next/head'
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
+import Block from '@/components/Block'
+import CodeBlock from '@/components/CodeBlock'
+import MethodBadge from '@/components/MethodBadge'
+import PageHeader from '@/components/PageHeader'
+import Seo from '@/components/Seo'
+import StructuredData from '@/components/StructuredData'
+import { API_BASE_URL, endpoints, type Endpoint } from '@/data/endpoints'
+import { structuredData } from '@/data/schema'
 
-const endpoints = [
-  {
-    method: 'GET',
-    path: '/mountains/search',
-    description: 'Search mountains by name',
-    tip: "You can use the 'c:' filter to narrow your results by country using the ISO 3166-1 alpha-2 code. Example: 'rainier c:us'",
-    params: [
-      {
-        name: 'query',
-        type: 'string',
-        required: true,
-        description: 'Search query'
-      }
-    ]
-  },
-  {
-    method: 'GET',
-    path: '/mountains/:canonicalUrl',
-    description: 'Get detailed information about a specific mountain',
-    params: [
-      {
-        name: 'canonicalUrl',
-        type: 'string',
-        required: true,
-        description: 'URL-friendly mountain identifier'
-      }
-    ]
-  }
-]
+const initialEndpoint =
+  endpoints.find((endpoint) => endpoint.path === '/mountains/search') ??
+  endpoints[0]
 
 export default function ApiExplorer() {
-  const [selectedEndpoint, setSelectedEndpoint] = useState(endpoints[0])
-  const [queryParams, setQueryParams] = useState<Record<string, string>>({})
-  const [response, setResponse] = useState<string>('')
+  const [selected, setSelected] = useState<Endpoint>(initialEndpoint)
+  const [values, setValues] = useState<Record<string, string>>({})
+  const [status, setStatus] = useState<number | null>(null)
+  const [body, setBody] = useState('')
   const [loading, setLoading] = useState(false)
 
-  const buildUrl = () => {
-    const baseUrl =
-      process.env.NEXT_PUBLIC_API_BASE_URL ||
-      'https://workers.akyatbundok.com/api/public'
-    let path = selectedEndpoint.path
-
-    Object.keys(queryParams).forEach((key) => {
-      if (path.includes(`:${key}`)) {
-        path = path.replace(`:${key}`, queryParams[key] || `:${key}`)
-      }
-    })
-
-    const query = Object.entries(queryParams)
-      .filter(([key]) => !selectedEndpoint.path.includes(`:${key}`))
+  const url = useMemo(() => {
+    const query = selected.params
+      .map((param) => [param.name, (values[param.name] ?? '').trim()] as const)
       .filter(([, value]) => value !== '')
-      .map(([key, value]) => `${key}=${encodeURIComponent(value)}`)
+      .map(([name, value]) => `${name}=${encodeURIComponent(value)}`)
       .join('&')
 
-    return `${baseUrl}${path}${query ? '?' + query : ''}`
+    return `${API_BASE_URL}${selected.path}${query ? `?${query}` : ''}`
+  }, [selected, values])
+
+  const select = (endpoint: Endpoint) => {
+    setSelected(endpoint)
+    setValues({})
+    setStatus(null)
+    setBody('')
   }
 
-  const handleTest = async () => {
+  const useExample = () => {
+    const filled: Record<string, string> = {}
+    new URLSearchParams(selected.exampleQuery).forEach((value, name) => {
+      filled[name] = value
+    })
+    setValues(filled)
+  }
+
+  const send = async () => {
     setLoading(true)
-    setResponse('')
+    setStatus(null)
+    setBody('')
 
     try {
-      const url = buildUrl()
       const res = await fetch(url)
-      const data = await res.json()
+      const text = await res.text()
 
-      setResponse(JSON.stringify(data, null, 2))
+      setStatus(res.status)
+
+      // Errors come back as plain text, so only parse when the body is JSON.
+      try {
+        setBody(JSON.stringify(JSON.parse(text), null, 2))
+      } catch {
+        setBody(text)
+      }
     } catch (error) {
-      setResponse(
-        `Error: ${error instanceof Error ? error.message : 'Unknown error'}`
-      )
+      setBody(error instanceof Error ? error.message : 'Request failed')
     } finally {
       setLoading(false)
     }
@@ -79,126 +70,114 @@ export default function ApiExplorer() {
 
   return (
     <>
-      <Head>
-        <title>The World Mountain Database - API Explorer </title>
-        <meta
-          name="description"
-          content="Test and explore the WMDB API endpoints"
-        />
-      </Head>
+      <Seo path="/api-explorer" />
+      <StructuredData data={structuredData('/api-explorer')} />
 
-      <div className="space-y-8">
-        <div>
-          <h1 className="text-4xl font-bold text-white mb-4">API Explorer</h1>
-          <p className="text-gray-300">
-            Test API endpoints directly from your browser
-          </p>
-        </div>
+      <PageHeader eyebrow="Try it" title="Mountain API explorer" />
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div className="lg:col-span-1">
-            <h2 className="text-xl font-semibold text-white mb-4">Endpoints</h2>
-            <div className="space-y-2">
-              {endpoints.map((endpoint, idx) => (
-                <button
-                  key={idx}
-                  onClick={() => {
-                    setSelectedEndpoint(endpoint)
-                    setQueryParams({})
-                    setResponse('')
-                  }}
-                  className={`w-full text-left p-3 rounded-lg transition-colors ${
-                    selectedEndpoint === endpoint
-                      ? 'bg-brown-500 text-white'
-                      : 'bg-main-400 text-gray-300 hover:bg-brown-500/50'
-                  }`}
-                >
-                  <div className="font-mono text-sm">{endpoint.method}</div>
-                  <div className="text-xs mt-1 break-all">{endpoint.path}</div>
-                </button>
-              ))}
-            </div>
+      <div className="grid gap-[18px] lg:grid-cols-[300px_1fr]">
+        <Block label="Endpoints">
+          <div className="flex flex-col">
+            {endpoints.map((endpoint) => (
+              <button
+                key={endpoint.path}
+                type="button"
+                onClick={() => select(endpoint)}
+                aria-pressed={selected.path === endpoint.path}
+                className={`flex items-center gap-3 border-b border-ink/25 px-[18px] py-3.5 text-left transition-colors last:border-b-0 ${
+                  selected.path === endpoint.path
+                    ? 'text-accent'
+                    : 'hover:text-accent'
+                }`}
+              >
+                <MethodBadge method={endpoint.method} />
+                <code className="font-mono text-[0.82rem] font-bold break-all">
+                  {endpoint.path}
+                </code>
+              </button>
+            ))}
           </div>
+        </Block>
 
-          <div className="lg:col-span-2 space-y-6">
-            {selectedEndpoint.tip && (
-              <div className="bg-blue-500/10 border border-blue-500/30 rounded-lg p-4">
-                <div className="flex items-start gap-2">
-                  <span className="text-blue-400 font-semibold text-sm whitespace-nowrap">
-                    💡 Tip:
-                  </span>
-                  <p className="text-gray-300 text-sm">
-                    {selectedEndpoint.tip}
-                  </p>
-                </div>
-              </div>
-            )}
-
-            <div>
-              <h2 className="text-xl font-semibold text-white mb-4">
-                Parameters
-              </h2>
-              <div className="bg-main-400 rounded-lg p-4 space-y-4">
-                {selectedEndpoint.params.length === 0 ? (
-                  <p className="text-gray-400 text-sm">
-                    No parameters required
-                  </p>
-                ) : (
-                  selectedEndpoint.params.map((param, idx) => (
-                    <div key={idx}>
-                      <label className="block text-sm font-medium text-gray-300 mb-1">
-                        {param.name}
+        <div className="flex flex-col gap-[18px]">
+          <Block label="Parameters">
+            <div className="flex flex-col gap-[18px] p-[18px]">
+              {selected.params.length === 0 ? (
+                <p className="text-[0.95rem] text-ink-soft">
+                  This endpoint takes no parameters.
+                </p>
+              ) : (
+                <div className="flex flex-col gap-3.5">
+                  {selected.params.map((param) => (
+                    <label key={param.name} className="flex flex-col gap-1.5">
+                      <span className="flex flex-wrap items-baseline gap-x-2 text-[0.72rem] font-extrabold uppercase tracking-[0.14em] text-ink-soft">
+                        <code className="font-mono text-[0.78rem] text-ink">
+                          {param.name}
+                        </code>
                         {param.required && (
-                          <span className="text-red-400 ml-1">*</span>
+                          <span className="text-accent">required</span>
                         )}
-                        <span className="text-gray-500 ml-2 text-xs">
-                          ({param.type})
+                        <span className="font-bold normal-case tracking-normal">
+                          {param.type}
                         </span>
-                      </label>
+                      </span>
                       <input
                         type="text"
-                        placeholder={param.description}
-                        value={queryParams[param.name] || ''}
-                        onChange={(e) =>
-                          setQueryParams({
-                            ...queryParams,
-                            [param.name]: e.target.value
+                        inputMode={
+                          param.type.includes('number') ? 'decimal' : 'text'
+                        }
+                        placeholder={param.default ?? param.description}
+                        value={values[param.name] ?? ''}
+                        onChange={(event) =>
+                          setValues({
+                            ...values,
+                            [param.name]: event.target.value
                           })
                         }
-                        className="w-full px-3 py-2 bg-main-500 border border-brown-500/30 rounded text-white placeholder-gray-500"
+                        className="border-[1.5px] border-ink bg-paper px-3.5 py-2 text-[0.9rem] font-medium placeholder:text-ink-soft focus:border-accent"
                       />
-                    </div>
-                  ))
+                    </label>
+                  ))}
+                </div>
+              )}
+
+              <div className="flex flex-wrap gap-3">
+                <button
+                  type="button"
+                  onClick={send}
+                  disabled={loading}
+                  className="border-[1.5px] border-ink bg-ink px-4 py-2.5 text-[0.72rem] font-bold uppercase tracking-[0.1em] text-paper transition-colors hover:border-accent hover:bg-accent disabled:opacity-40"
+                >
+                  {loading ? 'Sending…' : 'Send request'}
+                </button>
+                {selected.exampleQuery !== '' && (
+                  <button
+                    type="button"
+                    onClick={useExample}
+                    className="border-[1.5px] border-ink px-4 py-2.5 text-[0.72rem] font-bold uppercase tracking-[0.1em] transition-colors hover:border-accent hover:text-accent"
+                  >
+                    Fill example
+                  </button>
                 )}
               </div>
             </div>
-            <div>
-              <h3 className="text-sm font-medium text-gray-400 mb-2">
-                Request URL
-              </h3>
-              <div className="bg-main-400 rounded-lg p-3 font-mono text-sm break-all">
-                {buildUrl()}
-              </div>
-            </div>
-            <button
-              onClick={handleTest}
-              disabled={loading}
-              className="w-full bg-brown-500 hover:bg-brown-600 disabled:bg-gray-600 text-white px-6 py-3 rounded-lg font-semibold transition-colors"
-            >
-              {loading ? 'Loading...' : 'Test Endpoint'}
-            </button>
+          </Block>
 
-            {response && (
-              <div>
-                <h3 className="text-sm font-medium text-gray-400 mb-2">
-                  Response
-                </h3>
-                <pre className="bg-main-400 rounded-lg p-4 overflow-auto max-h-96 text-sm text-gray-300">
-                  {response}
-                </pre>
+          <Block label="Request">
+            <div className="p-[18px]">
+              <CodeBlock code={url} copyable />
+            </div>
+          </Block>
+
+          {(body || status !== null) && (
+            <Block
+              label={status !== null ? `Response · ${status}` : 'Response'}
+            >
+              <div className="p-[18px]">
+                <CodeBlock code={body || 'No content'} />
               </div>
-            )}
-          </div>
+            </Block>
+          )}
         </div>
       </div>
     </>

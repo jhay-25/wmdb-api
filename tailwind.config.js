@@ -4,33 +4,19 @@ module.exports = {
     './src/pages/**/*.{js,ts,jsx,tsx,mdx}',
     './src/components/**/*.{js,ts,jsx,tsx,mdx}'
   ],
-  darkMode: 'class',
   theme: {
     extend: {
       colors: {
-        brown: {
-          10: '#F9F6F2',
-          20: '#F4EDE4',
-          30: '#EEE4D7',
-          40: '#E9DBCA',
-          50: '#CDAD87',
-          100: '#C7A479',
-          200: '#C29B6C',
-          300: '#BC925F',
-          400: '#B68951',
-          500: '#ae8048',
-          600: '#A07643',
-          700: '#946D3E',
-          800: '#886439',
-          900: '#7B5B34'
+        paper: '#f3f0e7',
+        ink: {
+          DEFAULT: '#191611',
+          soft: '#615a4e'
         },
-        blue: {
-          500: '#4875AD'
-        },
-        main: {
-          400: '#24273b',
-          500: '#151728'
-        }
+        accent: '#b5341c'
+      },
+      fontFamily: {
+        apfel: ['"Apfel Grotezk"', 'sans-serif'],
+        mono: ['ui-monospace', 'SFMono-Regular', 'Menlo', 'monospace']
       }
     }
   },

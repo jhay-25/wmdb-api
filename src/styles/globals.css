@@ -2,14 +2,51 @@
 @tailwind components;
 @tailwind utilities;
 
+@font-face {
+  font-family: 'Apfel Grotezk';
+  src: url('/fonts/apfel-grotezk/ApfelGrotezk-Regular.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Apfel Grotezk';
+  src: url('/fonts/apfel-grotezk/ApfelGrotezk-Mittel.woff2') format('woff2');
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Apfel Grotezk';
+  src: url('/fonts/apfel-grotezk/ApfelGrotezk-Fett.woff2') format('woff2');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Apfel Grotezk';
+  src: url('/fonts/apfel-grotezk/ApfelGrotezk-Satt.woff2') format('woff2');
+  font-weight: 800;
+  font-style: normal;
+  font-display: swap;
+}
+
 @layer base {
   html {
-    @apply bg-main-500 text-white;
+    @apply bg-paper text-ink;
     overflow-x: hidden;
   }
 
   body {
+    @apply font-apfel antialiased;
     overflow-x: hidden;
+  }
+
+  input {
+    @apply outline-none;
   }
 
   input[type='number']::-webkit-inner-spin-button,
@@ -17,32 +54,4 @@
     -webkit-appearance: none;
     margin: 0;
   }
-}
-
-input[type='date']::-webkit-inner-spin-button,
-input[type='date']::-webkit-calendar-picker-indicator {
-  display: none;
-  -webkit-appearance: none;
-}
-
-input {
-  @apply outline-none;
-}
-
-[type='text']:focus {
-  @apply ring-brown-500;
-}
-
-*::-webkit-scrollbar {
-  width: 7px;
-}
-
-*::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-*::-webkit-scrollbar-thumb {
-  background-color: #ae8048;
-  border-radius: 5px;
-  border: 3px solid transparent;
 }

@@ -1,147 +1,77 @@
-import Head from 'next/head'
 import Link from 'next/link'
+import Block from '@/components/Block'
+import CodeBlock from '@/components/CodeBlock'
+import MethodBadge from '@/components/MethodBadge'
+import PageHeader from '@/components/PageHeader'
+import Seo from '@/components/Seo'
+import StructuredData from '@/components/StructuredData'
+import Table from '@/components/Table'
+import { API_BASE_URL, endpoints } from '@/data/endpoints'
+import { structuredData } from '@/data/schema'
 
-export default function Home() {
+const conventions = [
+  {
+    label: 'No key',
+    body: 'Every route is public and read-only. No authentication and no API key.'
+  },
+  {
+    label: 'Pagination',
+    body: 'List endpoints take limit (1–50, default 20) and offset, and report has_more. Out-of-range values are clamped.'
+  },
+  {
+    label: 'Cross-origin',
+    body: 'Responses allow any origin, so you can call the API from a browser.'
+  },
+  {
+    label: 'Methods and paths',
+    body: 'Only GET is supported. Trailing slashes matter: /api works, /api/ does not.'
+  }
+]
+
+export default function Overview() {
   return (
     <>
-      <Head>
-        <title>The World Mountain Database</title>
-        <meta
-          name="description"
-          content="Free REST API for mountain data. Access mountain elevations, coordinates, and geographic information."
-        />
-        <meta
-          name="keywords"
-          content="mountain API, hiking API, world mountains, REST API, free API, mountain data, mountain finder"
-        />
-      </Head>
+      <Seo path="/" />
+      <StructuredData data={structuredData('/')} />
 
-      <div className="prose prose-invert max-w-none">
-        <h1 className="text-4xl font-bold text-white mb-8">WMDB API</h1>
+      <PageHeader
+        eyebrow="World Mountain Database · WMDB"
+        title="Mountain API"
+        intro="A JSON API for the World Mountain Database. Search mountains by name, find the ones around a coordinate, or pull everything inside a map view."
+      />
 
-        <p className="text-lg text-gray-300 mb-8">
-          WMDB (The World Mountain Database) API provides mountain metadata,
-          including but not limited to elevations, coordinates, and geographic
-          information.
-        </p>
-
-        <div className="bg-main-400 border border-brown-500/30 rounded-lg p-6 mb-12">
-          <p className="text-sm text-gray-400 mb-2">Base URL</p>
-          <code className="text-lg">
-            {process.env.NEXT_PUBLIC_API_BASE_URL ||
-              'https://workers.akyatbundok.com/api/public'}
-          </code>
-        </div>
-
-        <h2 className="text-2xl font-bold text-white mt-12 mb-4">
-          Getting Started
-        </h2>
-        <p className="text-gray-300 mb-4">
-          All endpoints are publicly accessible and require no authentication.
-        </p>
-
-        <div className="bg-yellow-500/10 border border-yellow-500/40 rounded-lg p-4 mb-6 flex gap-3">
-          <span className="text-yellow-400 text-lg">⚠️</span>
-          <div>
-            <p className="text-yellow-300 font-semibold text-sm mb-1">
-              Rate Limit
-            </p>
-            <p className="text-gray-300 text-sm">
-              Requests are limited to{' '}
-              <strong className="text-white">600 calls per minute</strong>.
-            </p>
+      <Block label="Quick start">
+        <div className="flex flex-col gap-[18px] p-[18px]">
+          <div className="flex flex-col gap-2">
+            <span className="text-[0.66rem] font-extrabold uppercase tracking-[0.14em] text-ink-soft -mb-6">
+              Base URL
+            </span>
+            <CodeBlock code={API_BASE_URL} copyable />
           </div>
         </div>
+      </Block>
 
-        <h3 className="text-lg font-semibold text-white file:mt-8 mb-3">
-          Example Request
-        </h3>
-        <div className="bg-main-400 border border-brown-500/30 rounded-lg p-4 mb-6">
-          <code className="text-sm text-gray-300">
-            GET{' '}
-            {process.env.NEXT_PUBLIC_API_BASE_URL ||
-              'https://workers.akyatbundok.com/api/public'}
-            /mountains/search?query=rainier
-          </code>
+      <Block label="Endpoints" count={endpoints.length}>
+        <div className="grid gap-px bg-ink/25 sm:grid-cols-2">
+          {endpoints.map((endpoint) => (
+            <Link
+              key={endpoint.path}
+              href="/endpoints"
+              className="group flex flex-col gap-2 bg-paper p-[18px] transition-colors hover:text-accent"
+            >
+              <span className="flex items-center gap-3">
+                <MethodBadge method={endpoint.method} />
+                <code className="font-mono text-[0.95rem] font-bold tracking-[-0.01em]">
+                  {endpoint.path}
+                </code>
+              </span>
+              <span className="text-[0.88rem] leading-[1.5] text-ink-soft transition-colors group-hover:text-accent">
+                {endpoint.summary}
+              </span>
+            </Link>
+          ))}
         </div>
-
-        <h3 className="text-lg font-semibold text-white mt-8 mb-3">
-          Example Response
-        </h3>
-        <pre className="bg-main-400 border border-brown-500/30 rounded-lg p-4 mb-6 overflow-auto text-sm text-gray-300">
-          {`{
-  "mountain": {
-    "id": "ab58d8f7-d9ac-4092-b680-8ac2ad1d3f0d",
-    "created_at": "2025-06-13T00:55:00.148779+00:00",
-    "name": "Mount Rainier",
-    "elevation_ft": null,
-    "elevation_m": 4390,
-    "latitude": 46.8528267,
-    "longitude": -121.7604408,
-    "prominence_ft": null,
-    "prominence_m": null,
-    "description": null,
-    "highlights": null,
-    "canonical_url": "mount-rainier-washington",
-    "difficulty_level": null,
-    "other_name": null,
-    "created_by": null,
-    "banner_path": null
-  },
-  "countries": [
-    {
-      "id": 2,
-      "name": "United States",
-      "iso_code": "US"
-    }
-  ],
-  "islands": [],
-  "ranges": [],
-  "regions": [
-    {
-      "id": 65,
-      "name": "Washington"
-    }
-  ],
-  "provinces": []
-}`}
-        </pre>
-
-        <h2 className="text-2xl font-bold text-white mt-12 mb-4">
-          Available Endpoints
-        </h2>
-
-        <div className="space-y-4 mb-12">
-          <div className="border-l-4 border-brown-500 pl-4">
-            <h3 className="font-semibold">/mountains/:canonicalUrl</h3>
-            <p className="text-gray-400 text-sm">
-              Get detailed mountain information
-            </p>
-          </div>
-
-          <div className="border-l-4 border-brown-500 pl-4">
-            <h3 className="font-semibold">/mountains/search</h3>
-            <p className="text-gray-400 text-sm">
-              Search mountains by name and location
-            </p>
-          </div>
-        </div>
-
-        <div className="flex gap-4 mt-12">
-          <Link
-            href="/api-explorer"
-            className="inline-block bg-brown-500 hover:bg-brown-600 text-white px-6 py-3 rounded-lg font-semibold transition-colors"
-          >
-            Try API Explorer
-          </Link>
-          <Link
-            href="/endpoints"
-            className="inline-block bg-blue-500 hover:bg-blue-600 text-white px-6 py-3 rounded-lg font-semibold transition-colors"
-          >
-            View All Endpoints
-          </Link>
-        </div>
-      </div>
+      </Block>
     </>
   )
 }

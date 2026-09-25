@@ -1,60 +1,77 @@
-import Head from 'next/head'
 import { useState } from 'react'
+import Block from '@/components/Block'
+import CodeBlock from '@/components/CodeBlock'
+import MethodBadge from '@/components/MethodBadge'
+import PageHeader from '@/components/PageHeader'
+import Seo from '@/components/Seo'
+import StructuredData from '@/components/StructuredData'
+import { API_BASE_URL } from '@/data/endpoints'
+import { structuredData } from '@/data/schema'
 
 const languages = [
   {
-    name: 'JavaScript/Fetch',
-    code: `fetch('${process.env.NEXT_PUBLIC_API_BASE_URL || 'https://workers.akyatbundok.com/api/public'}/mountains/search?query=pulag')
-  .then(response => response.json())
-  .then(data => console.log(data))
-  .catch(error => console.error('Error:', error));`
+    name: 'JavaScript',
+    code: `const res = await fetch(
+  '${API_BASE_URL}/mountains/search?q=pulag&limit=5'
+)
+const data = await res.json()
+
+console.log(data.results)`
   },
   {
-    name: 'Python/Requests',
+    name: 'Python',
     code: `import requests
 
-response = requests.get(
-    '${process.env.NEXT_PUBLIC_API_BASE_URL || 'https://workers.akyatbundok.com/api/public'}/mountains/search',
-    params={'query': 'pulag'}
+res = requests.get(
+    '${API_BASE_URL}/mountains/search',
+    params={'q': 'pulag', 'limit': 5},
+    timeout=20,
 )
 
-data = response.json()
-print(data)`
+data = res.json()
+for mountain in data['results']:
+    print(mountain['name'], mountain['elevation_m'])`
   },
   {
     name: 'cURL',
-    code: `curl "${process.env.NEXT_PUBLIC_API_BASE_URL || 'https://workers.akyatbundok.com/api/public'}/mountains/search?query=pulag"`
+    code: `curl "${API_BASE_URL}/mountains/search?q=pulag&limit=5"`
   },
   {
     name: 'PHP',
     code: `<?php
-$url = '${process.env.NEXT_PUBLIC_API_BASE_URL || 'https://workers.akyatbundok.com/api/public'}/mountains/search?query=pulag';
-$response = file_get_contents($url);
-$data = json_decode($response, true);
+$url = '${API_BASE_URL}/mountains/search?q=pulag&limit=5';
+$data = json_decode(file_get_contents($url), true);
 
-print_r($data);
-?>`
+foreach ($data['results'] as $mountain) {
+    echo $mountain['name'], ' ', $mountain['elevation_m'], PHP_EOL;
+}`
   },
   {
     name: 'Go',
     code: `package main
 
 import (
-    "encoding/json"
-    "fmt"
-    "net/http"
+	"encoding/json"
+	"fmt"
+	"net/http"
 )
 
 func main() {
-    resp, err := http.Get("${process.env.NEXT_PUBLIC_API_BASE_URL || 'https://workers.akyatbundok.com/api/public'}/mountains/search?query=pulag")
-    if err != nil {
-        panic(err)
-    }
-    defer resp.Body.Close()
+	res, err := http.Get("${API_BASE_URL}/mountains/search?q=pulag&limit=5")
+	if err != nil {
+		panic(err)
+	}
+	defer res.Body.Close()
 
-    var data map[string]interface{}
-    json.NewDecoder(resp.Body).Decode(&data)
-    fmt.Println(data)
+	var data struct {
+		Results []struct {
+			Name       string \`json:"name"\`
+			ElevationM *int   \`json:"elevation_m"\`
+		} \`json:"results"\`
+	}
+
+	json.NewDecoder(res.Body).Decode(&data)
+	fmt.Println(data.Results)
 }`
   },
   {
@@ -62,90 +79,98 @@ func main() {
     code: `require 'net/http'
 require 'json'
 
-uri = URI('${process.env.NEXT_PUBLIC_API_BASE_URL || 'https://workers.akyatbundok.com/api/public'}/mountains/search?query=pulag')
-response = Net::HTTP.get(uri)
-data = JSON.parse(response)
+uri = URI('${API_BASE_URL}/mountains/search?q=pulag&limit=5')
+data = JSON.parse(Net::HTTP.get(uri))
 
-puts data`
+data['results'].each do |mountain|
+  puts "#{mountain['name']} #{mountain['elevation_m']}"
+end`
   }
 ]
 
 const useCases = [
   {
-    title: 'Search Mountains by Name',
-    description: 'Find mountains containing "pulag" in their name',
-    endpoint: '/mountains/search?query=pulag'
+    path: '/mountains/search?q=pulag',
+    description: 'Find mountains with “pulag” in the name.'
   },
   {
-    title: 'Search with Country Filter',
-    description: 'Find mountains named "apo" in Philippines (PH)',
-    endpoint: '/mountains/search?query=apo c:ph'
+    path: '/mountains/search?q=apo&country=PH',
+    description: 'The same search, limited to the Philippines by ISO code.'
   },
   {
-    title: 'Get Mountain Details',
-    description: 'Retrieve complete information about a specific mountain',
-    endpoint: '/mountains/mount-rainier-washington'
+    path: '/mountains/nearby?lat=16.59772&lng=120.89875&radius=25000',
+    description: 'Everything within 25 km of a point, nearest first.'
+  },
+  {
+    path: '/mountains/in-bounds?north=17&south=16.2&east=121.2&west=120.6',
+    description: 'A small viewport, for plotting on a map.'
+  },
+  {
+    path: '/health',
+    description: 'Check the service without touching the database.'
   }
 ]
 
 export default function Examples() {
-  const [selectedLanguage, setSelectedLanguage] = useState(languages[0])
-
-  const copyToClipboard = (text: string) => {
-    navigator.clipboard.writeText(text)
-  }
+  const [selected, setSelected] = useState(languages[0])
 
   return (
     <>
-      <Head>
-        <title>Code Examples - Akyat Bundok API</title>
-        <meta
-          name="description"
-          content="Code examples and use cases for the Akyat Bundok API"
-        />
-      </Head>
+      <Seo path="/examples" />
+      <StructuredData data={structuredData('/examples')} />
 
-      <div className="space-y-12">
-        <div>
-          <h1 className="text-4xl font-bold text-white mb-4">Code Examples</h1>
-        </div>
+      <PageHeader eyebrow="Cookbook" title="Mountain API examples" />
 
-        {/* Language Examples */}
-        <div>
-          <div className="flex flex-wrap gap-2 mb-6">
-            {languages.map((lang) => (
+      <Block
+        label={
+          <h2 className="text-[0.8rem] font-extrabold uppercase tracking-[0.2em]">
+            {selected.name}
+          </h2>
+        }
+      >
+        <div className="flex flex-col gap-[18px] p-[18px]">
+          <div className="flex flex-wrap gap-2">
+            {languages.map((language) => (
               <button
-                key={lang.name}
-                onClick={() => setSelectedLanguage(lang)}
-                className={`px-4 py-2 rounded-lg transition-colors ${
-                  selectedLanguage.name === lang.name
-                    ? 'bg-brown-500 text-white'
-                    : 'bg-main-400 text-gray-300 hover:bg-brown-500/50'
+                key={language.name}
+                type="button"
+                onClick={() => setSelected(language)}
+                aria-pressed={selected.name === language.name}
+                className={`border-[1.5px] px-3.5 py-2 text-[0.72rem] font-bold uppercase tracking-[0.1em] transition-colors ${
+                  selected.name === language.name
+                    ? 'border-ink bg-ink text-paper'
+                    : 'border-ink bg-paper text-ink hover:border-accent hover:text-accent'
                 }`}
               >
-                {lang.name}
+                {language.name}
               </button>
             ))}
           </div>
 
-          <div className="bg-main-400 rounded-lg">
-            <div className="flex items-center justify-between px-4 py-2 bg-main-500 border rounded-tl rounded-tr border-brown-500/30">
-              <span className="text-gray-300 font-semibold">
-                {selectedLanguage.name}
-              </span>
-              <button
-                onClick={() => copyToClipboard(selectedLanguage.code)}
-                className="text-brown-200 hover:text-brown-100 text-sm"
-              >
-                Copy
-              </button>
-            </div>
-            <pre className="p-4 overflow-auto text-sm text-gray-300">
-              {selectedLanguage.code}
-            </pre>
-          </div>
+          <CodeBlock code={selected.code} copyable />
         </div>
-      </div>
+      </Block>
+
+      <Block label="Use cases" count={useCases.length}>
+        <div className="grid gap-px bg-ink/25 sm:grid-cols-2">
+          {useCases.map((useCase) => (
+            <div
+              key={useCase.path}
+              className="flex flex-col gap-2 bg-paper p-[18px]"
+            >
+              <span className="flex items-center gap-3">
+                <MethodBadge method="GET" />
+                <code className="font-mono text-[0.85rem] font-bold break-all">
+                  {useCase.path}
+                </code>
+              </span>
+              <span className="text-[0.88rem] leading-[1.5] text-ink-soft">
+                {useCase.description}
+              </span>
+            </div>
+          ))}
+        </div>
+      </Block>
     </>
   )
 }
